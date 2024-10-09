@@ -1,1 +1,1 @@
-print('Greetings mentor')
+pr('Greetings mentor')
