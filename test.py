@@ -1,1 +1,1 @@
-print('Привет, наставник')
+print('Hello mentor')
