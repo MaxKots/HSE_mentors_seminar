@@ -1,1 +1,1 @@
-print('Greetings mentor')
+'Greetings mentor'
