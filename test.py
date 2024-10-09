@@ -1,1 +1,1 @@
-'Greetings mentor'
+print('hello mentor')
