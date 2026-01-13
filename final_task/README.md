@@ -87,11 +87,12 @@ EOF
 <summary><b>Конфиг Postgres</b></summary>
 
 ```bash
-cat > ~/trino-lakehouse/trino/catalog/postgres.properties
+cat > ~/trino-lakehouse/trino/catalog/postgres.properties << 'EOF'
 connector.name=postgresql
 connection-url=jdbc:postgresql://postgres:5432/demo_db
 connection-user=***USER***
 connection-password=***PASSWORD***
+EOF
 ```
 </details>
 
@@ -99,11 +100,12 @@ connection-password=***PASSWORD***
 <summary><b>Конфиг Mysql</b></summary>
 
 ```bash
-cat > ~/trino-lakehouse/trino/catalog/mysql.properties
+cat > ~/trino-lakehouse/trino/catalog/mysql.properties << 'EOF'
 connector.name=mysql
 connection-url=jdbc:mysql://mysql:3306
 connection-user=***USER***
 connection-password=***PASSWORD***
+EOF
 ```
 </details>
 
@@ -111,7 +113,7 @@ connection-password=***PASSWORD***
 <summary><b>Конфиг Iceberg</b></summary>
 
 ```bash
-cat > ~/trino-lakehouse/trino/catalog/iceberg.properties
+cat > ~/trino-lakehouse/trino/catalog/iceberg.properties << 'EOF'
 connector.name=iceberg
 iceberg.catalog.type=hive_metastore
 hive.metastore.uri=thrift://hive-metastore:9083
@@ -120,6 +122,7 @@ hive.s3.path-style-access=true
 hive.s3.aws-access-key=***PASSWORD***
 hive.s3.aws-secret-key=***PASSWORD***
 iceberg.file-format=PARQUET
+EOF
 ```
 </details>
 
@@ -174,8 +177,8 @@ INSERT INTO trn_customers (customer_name, email) VALUES
     ('Татьяна Попова', 'tatiana@example.com');
 
 -- выдача прав на таблицы
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO trino_user;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO trino_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ***USER***;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ***USER***;
 EOF
 ```
 </details>
@@ -184,12 +187,12 @@ EOF
 <summary><b>инициализация Mysql</b></summary>
     
 ```bash
-cat > ~/trino-lakehouse/mysql/init/01-init.sql
+cat > ~/trino-lakehouse/mysql/init/01-init.sql << 'EOF'
 -- создание бд
 CREATE DATABASE IF NOT EXISTS demo_db;
 
 -- создание юзера для trino
-CREATE USER IF NOT EXISTS 'trino_user'@'%' IDENTIFIED BY '***PASSWORD***';
+CREATE USER IF NOT EXISTS '***USER***'@'%' IDENTIFIED BY '***PASSWORD***';
 GRANT ALL PRIVILEGES ON *.* TO '***USER***'@'%';
 FLUSH PRIVILEGES;
 
