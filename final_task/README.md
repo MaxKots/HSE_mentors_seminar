@@ -1,22 +1,20 @@
 # Проект по работе связки Trino + PostgreSQL + MySQL + Iceberg
 
-
-
-## Полный гайд по установке Trino, PostgreSQL, MySQL и Iceberg для работы с JupyterLab ([здесь](https://github.com/MaxKots/installation_guides/tree/main) другие гайды)
+## Полный гайд по установке софта для работы с JupyterLab ([здесь](https://github.com/MaxKots/installation_guides/tree/main) другие гайды)
 
 ### Оглавление:
-1. [Предварительные требования](#предварительные-требования)
-2. [Установка и настройка компонентов](#установка-и-настройка-компонентов)
-3. [Настройка каталогов Trino](#настройка-каталогов-trino)
-4. [Проверка работоспособности](#проверка-работоспособности)
-5. [Решение проблем](#решение-проблем)
+1. [Установка и настройка компонентов](#установка-и-настройка-компонентов)
+2. [Настройка каталогов Trino](#настройка-каталогов-trino)
+3. [Проверка работоспособности](#проверка-работоспособности)
+4. [Решение проблем](#решение-проблем)
 
-Само собой, нужен установленный docker и убедиться, что ранее установленный JH не запущен:
+Само собой, тебе нужен установленный docker и убедиться, что ранее установленный JH не запущен:
 ```
 docker ps -a | grep -i jupyter
 ```
 
-#### Башник для проверки портов, которые буду использовать
+<details>
+<summary><b>Башник для проверки портов, которые буду использовать</b></summary>
 
 ```bash
 for port in 8080 5433 3307 9000 9001 9083; do
@@ -28,6 +26,7 @@ for port in 8080 5433 3307 9000 9001 9083; do
     fi
 done
 ```
+</details>
 
 ---
 
@@ -44,9 +43,11 @@ cd ~/trino-lakehouse
 mkdir -p {trino/catalog,postgres/init,mysql/init,minio/data,hive-metastore}
 ```
 
-### 2: Создание конфига trino (EOF для удобства записи в один файл)
+### 2: Создание конфигов
 
-
+<details>
+<summary><b>Конфиг Trino</b></summary>
+    
 ```bash
 # конфиг-файл
 cat > ~/trino-lakehouse/trino/config.properties << 'EOF'
@@ -81,8 +82,10 @@ cat > ~/trino-lakehouse/trino/log.properties << 'EOF'
 io.trino=INFO
 EOF
 ```
+</details>
 
-#### Конфиг PostgreSQL
+<details>
+<summary><b>Конфиг Postgres</b></summary>
 
 ```bash
 cat > ~/trino-lakehouse/trino/catalog/postgres.properties
@@ -91,8 +94,10 @@ connection-url=jdbc:postgresql://postgres:5432/demo_db
 connection-user=***USER***
 connection-password=***PASSWORD***
 ```
+</details>
 
-#### Конфиг MySQL
+<details>
+<summary><b>Конфиг Mysql</b></summary>
 
 ```bash
 cat > ~/trino-lakehouse/trino/catalog/mysql.properties
@@ -100,10 +105,11 @@ connector.name=mysql
 connection-url=jdbc:mysql://mysql:3306
 connection-user=***USER***
 connection-password=***PASSWORD***
-
 ```
+</details>
 
-#### Конфигурация каталога Iceberg
+<details>
+<summary><b>Конфиг Iceberg</b></summary>
 
 ```bash
 cat > ~/trino-lakehouse/trino/catalog/iceberg.properties
@@ -116,10 +122,12 @@ hive.s3.aws-access-key=***PASSWORD***
 hive.s3.aws-secret-key=***PASSWORD***
 iceberg.file-format=PARQUET
 ```
+</details>
 
 ### 3: Скрипты инициализации баз данных
 
-#### PostgreSQL init script
+<details>
+<summary><b>инициализация PostgreSQL</b></summary>
 
 ```bash
 cat > ~/trino-lakehouse/postgres/init/01-init.sql << 'EOF'
@@ -171,9 +179,11 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO trino_user;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO trino_user;
 EOF
 ```
+</details>
 
-#### MySQL init script
-
+<details>
+<summary><b>инициализация Mysql</b></summary>
+    
 ```bash
 cat > ~/trino-lakehouse/mysql/init/01-init.sql
 -- создание бд
@@ -199,9 +209,13 @@ CREATE INDEX idx_payments_order_id ON trn_payments(order_id);
 CREATE INDEX idx_payments_paid_at ON trn_payments(paid_at);
 EOF
 ```
+</details>
 
-### 4: Создание docker compose
+### 4: Здоровенный docker compose
 
+<details>
+<summary><b>Содержимое</b></summary>
+    
 ```bash
 cat > ~/trino-lakehouse/docker-compose.yml << 'EOF'
 version: '3.8'
@@ -213,8 +227,8 @@ services:
     container_name: postgres
     hostname: postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ***USER***
+      POSTGRES_PASSWORD: ***PASSWORD***
       POSTGRES_DB: demo_db
     ports:
       - "5433:5432"
@@ -229,16 +243,16 @@ services:
       timeout: 5s
       retries: 5
 
-  # MySQL - источник данных для платежей
+  # Mysql - источник данных для платежей
   mysql:
     image: mysql:8.0
     container_name: mysql
     hostname: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_ROOT_PASSWORD: ***PASSWORD***
       MYSQL_DATABASE: demo_db
-      MYSQL_USER: trino_user
-      MYSQL_PASSWORD: trino_password
+      MYSQL_USER: ***USER***
+      MYSQL_PASSWORD: ***PASSWORD***
     ports:
       - "3307:3306"
     volumes:
@@ -253,14 +267,14 @@ services:
       retries: 5
     command: --default-authentication-plugin=mysql_native_password
 
-  # MinIO - S3-совместимое хранилище для Iceberg
+  # Minio для айсберга
   minio:
     image: minio/minio:latest
     container_name: minio
     hostname: minio
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ***USER***
+      MINIO_ROOT_PASSWORD: ***PASSWORD***
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -275,7 +289,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Создание bucket в MinIO
+  # создание бакета в MinIO
   minio-setup:
     image: minio/mc:latest
     container_name: minio-setup
@@ -295,7 +309,7 @@ services:
       exit 0;
       "
 
-  # Hive Metastore для Iceberg
+  # Hive Metastore для айсберга
   hive-metastore:
     image: apache/hive:4.0.0
     container_name: hive-metastore
@@ -326,7 +340,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # Trino - движок запросов
+  # Trino
   trino:
     image: trinodb/trino:435
     container_name: trino
@@ -368,29 +382,30 @@ volumes:
   trino_data:
 EOF
 ```
+</details>
 
 ### 5: Запуск
 
 ```bash
 cd ~/trino-lakehouse
 
-# Запуск всех сервисов
+# Пуск всех сервисов
 docker compose up -d
 
-# Мониторинг запуска (ждём пока все сервисы станут healthy)
+# Промониторь запуск
 docker compose ps
 
-# Просмотр логов при необходимости
+# Логи
 docker compose logs -f trino
 
-# Проверка здоровья всех контейнеров
+# Здоровье контейнеров
 docker ps --format "table {{.Names}}\t{{.Status}}"
 ```
 
 ### 6: Подключение сети JupyterLab к Trino
 
 ```bash
-# Подключение существующего JupyterLab к сети trino-network
+# Подключение существующего jupyter к сети trino
 docker network connect trino-network JupyterLab
 
 # Проверка подключения
@@ -400,7 +415,7 @@ docker network inspect trino-network | grep -A 5 JupyterLab
 ### 7: Установка Python-клиента Trino в JupyterLab
 
 ```bash
-# Установка trino-python-client
+# Установка trino→python→client
 docker exec -it JupyterLab pip install trino pandas matplotlib seaborn
 
 # Проверка установки
@@ -414,7 +429,7 @@ docker exec -it JupyterLab python -c "import trino; print('trino version:', trin
 ### Проверка Trino через CLI
 
 ```bash
-# Вход в контейнер Trino
+# Залетай в контейнер Trino
 docker exec -it trino trino
 
 # В консоли Trino выполнить:
@@ -426,13 +441,13 @@ SHOW TABLES FROM mysql.demo_db;
 exit
 ```
 
-### Проверка Trino через curl
+### Дерни Trino через curl
 
 ```bash
-# Проверка статуса Trino
+# проверка статуса Trino
 curl -s http://localhost:8080/v1/info | python3 -m json.tool
 
-# Проверка доступных каталогов
+# проверка доступных каталогов
 curl -s http://localhost:8080/v1/statement \\
   -H "X-Trino-User: test" \\
   -d "SHOW CATALOGS"
@@ -441,8 +456,8 @@ curl -s http://localhost:8080/v1/statement \\
 ### Проверка MinIO
 
 Открой в браузере: http://localhost:9001
-- Login: minioadmin
-- Password: minioadmin
+- Login: ***USER***
+- Password: ***PASSWORD***
 ---
 
 ## Полная очистка (если нужно начать заново)
