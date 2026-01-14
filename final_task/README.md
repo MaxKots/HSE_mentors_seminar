@@ -485,8 +485,7 @@ curl -s http://localhost:8080/v1/statement -H "X-Trino-User: test" -d "SHOW CATA
 ### Проверка MinIO
 
 Открой в браузере: http://localhost:9001
-- Login: ***USER***
-- Password: ***PASSWORD***
+- Credentials: Твой логин и пароль, когда менял в конфиг файлах и docker-compose \*\*\*USER\*\*\* и \*\*\*PASSWORD\*\*\*
 
 ### Тест подключения из JupyterLab
 ```
