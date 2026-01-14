@@ -467,7 +467,7 @@ SHOW SCHEMAS FROM mysql;
 SHOW TABLES FROM mysql.demo_db;
 exit
 ```
-![Результат запросов](https://github.com/MaxKots/HSE_mentors_seminar/blob/main/final_task/.assets/screen_1.jpg)
+![Результат запросов](https://github.com/MaxKots/HSE_mentors_seminar/blob/main/final_task/.assets/screen_2.jpg)
 </details>
 
 <details>
