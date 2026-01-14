@@ -415,7 +415,7 @@ docker-compose logs -f trino
 # Здоровье контейнеров
 docker ps --format "table {{.Names}}\t{{.Status}}"
 ```
-![Должно быть так](https://github.com/MaxKots/HSE_mentors_seminar/edit/main/final_task/.assets/screen_1.jpg)
+![Должно быть так](https://github.com/MaxKots/HSE_mentors_seminar/blob/main/final_task/.assets/screen_1.jpg)
 
 
 ### 6: Подключение сети JupyterLab к Trino
@@ -467,7 +467,7 @@ SHOW SCHEMAS FROM mysql;
 SHOW TABLES FROM mysql.demo_db;
 exit
 ```
-![Результат запросов](https://github.com/MaxKots/HSE_mentors_seminar/edit/main/final_task/.assets/screen_2.jpg)
+![Результат запросов](https://github.com/MaxKots/HSE_mentors_seminar/blob/main/final_task/.assets/screen_1.jpg)
 </details>
 
 <details>
