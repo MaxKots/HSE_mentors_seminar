@@ -39,7 +39,7 @@ mkdir -p ~/trino-lakehouse
 cd ~/trino-lakehouse
 
 # структура директорий
-mkdir -p {trino/catalog,postgres/init,mysql/init,minio/data,hive-metastore}
+mkdir -p {trino/catalog,postgres/init,mysql/init,minio/data,hive-metastore,hive-data}
 ```
 
 ### 2: Создание конфигов
@@ -319,20 +319,12 @@ services:
     environment:
       SERVICE_NAME: metastore
       DB_DRIVER: derby
-      SERVICE_OPTS: >-
-        -Djavax.jdo.option.ConnectionDriverName=org.apache.derby.jdbc.EmbeddedDriver
-        -Djavax.jdo.option.ConnectionURL=jdbc:derby:/opt/hive/data/metastore_db;create=true
     ports:
       - "9083:9083"
     volumes:
-      - hive_data:/opt/hive/data
+      - ./hive-data:/opt/hive/data    # Локальная директория вместо volume
     networks:
       - trino-network
-    command: >
-      /bin/bash -c "
-      /opt/hive/bin/schematool -dbType derby -initSchema || true;
-      /opt/hive/bin/hive --service metastore
-      "
     depends_on:
       minio-setup:
         condition: service_completed_successfully
@@ -340,7 +332,8 @@ services:
       test: ["CMD", "bash", "-c", "cat < /dev/null > /dev/tcp/localhost/9083"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 120s
 
   # Trino
   trino:
@@ -380,7 +373,6 @@ volumes:
   postgres_data:
   mysql_data:
   minio_data:
-  hive_data:
   trino_data:
 EOF
 ```
@@ -392,13 +384,13 @@ EOF
 cd ~/trino-lakehouse
 
 # Пуск всех сервисов
-docker compose up -d
+docker-compose up -d
 
 # Промониторь запуск
-docker compose ps
+docker-compose ps
 
 # Логи
-docker compose logs -f trino
+docker-compose logs -f trino
 
 # Здоровье контейнеров
 docker ps --format "table {{.Names}}\t{{.Status}}"
