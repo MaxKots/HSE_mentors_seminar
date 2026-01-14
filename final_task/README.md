@@ -115,12 +115,26 @@ EOF
 ```bash
 cat > ~/trino-lakehouse/trino/catalog/iceberg.properties << 'EOF'
 connector.name=iceberg
-iceberg.catalog.type=hive_metastore
-hive.metastore.uri=thrift://hive-metastore:9083
-hive.s3.endpoint=http://minio:9000
-hive.s3.path-style-access=true
-hive.s3.aws-access-key=***USER***
-hive.s3.aws-secret-key=***PASSWORD***
+
+# нахрен hive, только JDBC Postgres
+iceberg.catalog.type=jdbc
+iceberg.jdbc-catalog.driver-class=org.postgresql.Driver
+iceberg.jdbc-catalog.connection-url=jdbc:postgresql://postgres:5432/demo_db
+iceberg.jdbc-catalog.connection-user=***USER***
+iceberg.jdbc-catalog.connection-password=***PASSWORD***
+iceberg.jdbc-catalog.catalog-name=iceberg_metadata
+
+# дефолтная папка
+iceberg.jdbc-catalog.default-warehouse-dir=s3://warehouse/
+
+# Настройки S3
+fs.native-s3.enabled=true
+s3.endpoint=http://minio:9000
+s3.region=us-east-1
+s3.path-style-access=true
+s3.aws-access-key=***USER***
+s3.aws-secret-key=***PASSWORD***
+
 iceberg.file-format=PARQUET
 EOF
 ```
