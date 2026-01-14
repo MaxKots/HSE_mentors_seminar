@@ -119,7 +119,7 @@ iceberg.catalog.type=hive_metastore
 hive.metastore.uri=thrift://hive-metastore:9083
 hive.s3.endpoint=http://minio:9000
 hive.s3.path-style-access=true
-hive.s3.aws-access-key=***PASSWORD***
+hive.s3.aws-access-key=***USER***
 hive.s3.aws-secret-key=***PASSWORD***
 iceberg.file-format=PARQUET
 EOF
