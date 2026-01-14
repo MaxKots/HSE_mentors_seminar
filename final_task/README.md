@@ -308,7 +308,7 @@ services:
       - trino-network
     entrypoint: >
       /bin/sh -c "
-      mc alias set myminio http://minio:9000 minioadmin minioadmin;
+      mc alias set myminio http://minio:9000 ***USER*** ***PASSWORD***;
       mc mb myminio/warehouse --ignore-existing;
       mc mb myminio/iceberg --ignore-existing;
       mc anonymous set public myminio/warehouse;
