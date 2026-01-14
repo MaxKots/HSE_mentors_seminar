@@ -133,21 +133,26 @@ EOF
 
 ```bash
 cat > ~/trino-lakehouse/postgres/init/01-init.sql << 'EOF'
--- создание юзера для трино
-CREATE USER ***USER*** WITH PASSWORD '***PASSWORD***';
+-- Создание юзера для Trino (IF NOT EXISTS для избежания ошибок)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '***USER***') THEN
+        CREATE USER ***USER*** WITH PASSWORD '***PASSWORD***';
+    END IF;
+END
+$$;
 
--- создание бд
-CREATE DATABASE demo_db;
-
--- подключение к бд
-\\c demo_db
-
--- выдача прав
+-- Выдача прав
 GRANT ALL PRIVILEGES ON DATABASE demo_db TO ***USER***;
+
+-- Подключение к бд demo_db
+\c demo_db
+
+-- права на схему
 GRANT ALL PRIVILEGES ON SCHEMA public TO ***USER***;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ***USER***;
 
--- создание таблички клиентов
+-- табличка клиентов
 CREATE TABLE IF NOT EXISTS trn_customers (
     customer_id SERIAL PRIMARY KEY,
     customer_name VARCHAR(100) NOT NULL,
@@ -155,7 +160,7 @@ CREATE TABLE IF NOT EXISTS trn_customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- создание таблички заказов
+-- табличка заказов
 CREATE TABLE IF NOT EXISTS trn_orders (
     order_id BIGSERIAL PRIMARY KEY,
     customer_id INTEGER REFERENCES trn_customers(customer_id),
@@ -163,7 +168,7 @@ CREATE TABLE IF NOT EXISTS trn_orders (
     total_amount DECIMAL(12, 2) NOT NULL
 );
 
--- наполнение таблички клиентов
+-- Заполнение таблички
 INSERT INTO trn_customers (customer_name, email) VALUES
     ('Иван Иванов', 'ivan@example.com'),
     ('Мария Петрова', 'maria@example.com'),
@@ -174,9 +179,10 @@ INSERT INTO trn_customers (customer_name, email) VALUES
     ('Сергей Волков', 'sergey@example.com'),
     ('Анна Лебедева', 'anna@example.com'),
     ('Николай Соколов', 'nikolay@example.com'),
-    ('Татьяна Попова', 'tatiana@example.com');
+    ('Татьяна Попова', 'tatiana@example.com')
+ON CONFLICT DO NOTHING;
 
--- выдача прав на таблицы
+-- Выдача прав
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ***USER***;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO ***USER***;
 EOF
@@ -395,6 +401,8 @@ docker-compose logs -f trino
 # Здоровье контейнеров
 docker ps --format "table {{.Names}}\t{{.Status}}"
 ```
+![Должно быть так](https://github.com/MaxKots/HSE_mentors_seminar/edit/main/final_task/.assets/screen_1.jpg)
+
 
 ### 6: Подключение сети JupyterLab к Trino
 
@@ -420,7 +428,18 @@ docker exec -it JupyterLab python -c "import trino; print('trino version:', trin
 
 ## Проверка работоспособности
 
-### Проверка Trino через CLI
+### Проверка trino
+
+<details>
+<summary><b>Проверка сети</b></summary>
+    
+```
+docker network inspect trino-network
+```
+</details>
+
+<details>
+<summary><b>Проверка Trino через CLI</b></summary>
 
 ```bash
 # Залетай в контейнер Trino
@@ -434,27 +453,44 @@ SHOW SCHEMAS FROM mysql;
 SHOW TABLES FROM mysql.demo_db;
 exit
 ```
+![Результат запросов](https://github.com/MaxKots/HSE_mentors_seminar/edit/main/final_task/.assets/screen_2.jpg)
+</details>
 
-### Дерни Trino через curl
+<details>
+<summary><b>Проверка Trino через curl</b></summary>
 
 ```bash
 # проверка статуса Trino
 curl -s http://localhost:8080/v1/info | python3 -m json.tool
 
 # проверка доступных каталогов
-curl -s http://localhost:8080/v1/statement \\
-  -H "X-Trino-User: test" \\
-  -d "SHOW CATALOGS"
+curl -s http://localhost:8080/v1/statement -H "X-Trino-User: test" -d "SHOW CATALOGS"
 ```
+</details>
 
 ### Проверка MinIO
 
 Открой в браузере: http://localhost:9001
 - Login: ***USER***
 - Password: ***PASSWORD***
+
+### Тест подключения из JupyterLab
+```
+docker exec -it JupyterLab ping trino
+docker exec -it JupyterLab curl -s http://trino:8080/v1/info
+```
+
+### Проверка Jupyter
+Сгенерируй токен командой:
+```
+docker exec JupyterLab jupyter server list
+```
+Зайди по адресу http://127.0.0.1:8888/
+
 ---
 
-## Полная очистка
+<details>
+<summary><b>Полная очистка</b></summary>
 
 ```bash
 cd ~/trino-lakehouse
@@ -470,6 +506,7 @@ docker volume rm trino-lakehouse_postgres_data trino-lakehouse_mysql_data \\
 docker network disconnect trino-network JupyterLab
 docker network rm trino-network
 
-# Удаление конфигурации
+# Удаление конфига
 rm -rf ~/trino-lakehouse
 ```
+</details>
